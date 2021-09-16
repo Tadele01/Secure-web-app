@@ -4,7 +4,7 @@ from flask import (Blueprint, redirect, render_template, flash, g,
 from werkzeug import useragents
 from werkzeug.exceptions import RequestEntityTooLarge
 from werkzeug.security import check_password_hash, generate_password_hash
-from Citizens_petitions.db import get_db
+from Citizens_feedbacks.db import get_db
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 @bp.route('/register', methods=['GET', 'POST'])
