@@ -11,6 +11,7 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 def register():
     if request.method == 'POST':
         username = request.form['username']
+        email = request.form['email']
         password = request.form['password']
         db = get_db()
         error = None
@@ -19,12 +20,13 @@ def register():
             error = 'Username is required !'
         elif not password:
             error = 'Password is required !'
-        
+        elif not email:
+            error = 'Email is required !'
         if error is None:
             try:
                 db.execute(
-                    "INSERT INTO user (username, password) VALUES (?, ?)", 
-                        (username, generate_password_hash(password))
+                    "INSERT INTO user (username, email, password) VALUES (?, ?, ?)", 
+                        (username, email, generate_password_hash(password))
                 )
                 db.commit()
             except db.IntegrityError:
@@ -38,20 +40,29 @@ def register():
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        username = request.form.get('username', None)
+        password = request.form.get('password', None)
+        is_admin = request.form.get('admin', None)
         db = get_db()
         error = None
         user = db.execute('SELECT * FROM user WHERE username = ?', (username, )).fetchone()
         if user is None:
             error = "User does not exists"
         elif not check_password_hash(user['password'], password):
-            error = "User or Password incorrect"
-        
+            error = "Username or Password incorrect"
+        elif is_admin or user['role'] == 'admin':
+            if user['role'] != 'admin':
+                error = "Username or Password incorrect"
+            else:
+                session.clear()
+                session['user_id'] = user['id']
+                return redirect(url_for('feedback.logged_as_user'))
+        if user['is_active'] == 0:
+            error = 'User is banned contact the adminstrator !'
         if error is None:
             session.clear()
             session['user_id'] = user['id']
-            return redirect(url_for('index'))
+            return redirect(url_for('feedback.logged_as_user'))
         
         flash(error)
 

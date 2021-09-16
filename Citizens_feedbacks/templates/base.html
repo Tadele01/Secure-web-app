@@ -1,8 +1,8 @@
 <!doctype html>
-<title>{% block title %}{% endblock %} - Citizens Feedbacks</title>
+<title>{% block title %}{% endblock %} Citizens Feedbacks</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <nav>
-  <h1>Citizens Feedbacks</h1>
+  <h1><a href="{{url_for('feedback.index')}}">Citizens Feedbacks</a></h1>
   <ul>
     {% if g.user %}
       <li><span>{{ g.user['username'] }}</span>

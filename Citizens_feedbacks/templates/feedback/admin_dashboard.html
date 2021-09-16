@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+  {% for feedback in feedbacks %}
+    <article class="feedback">
+      <header>
+        <div>
+          <h1>{{ feedback['title'] }}</h1>
+          <div class="about">by {{ feedback['username'] }} on {{ feedback['created'].strftime('%Y-%m-%d') }}</div>
+        </div>
+        {% if g.user['role'] == 'admin' %}
+          {% if feedback['is_active'] == 1 %}
+            <a class="action" href="{{ url_for('feedback.ban_user', author_id=feedback['author_id'], is_active = feedback['is_active']) }}">Ban User</a>
+          {% endif %}
+          {% if feedback['is_active'] == 0 %}
+            <a class="action" href="{{ url_for('feedback.ban_user', author_id=feedback['author_id'], is_active = feedback['is_active']) }}">Unban User</a>
+          {% endif %}
+        {% endif %}
+      </header>
+      <p class="body">{{ feedback['comment'] }}</p>
+    </article>
+    {% if not loop.last %}
+      <hr>
+    {% endif %}
+  {% endfor %}
+{% endblock %}
