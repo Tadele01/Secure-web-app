@@ -1,5 +1,6 @@
 import os
-from flask import Flask
+from flask import Flask, render_template
+from flask.globals import request
 from flask.helpers import url_for
 
 def create_app(test_config=None):
@@ -9,6 +10,11 @@ def create_app(test_config=None):
         DATABASE = os.path.join(app.instance_path, 'citizens_feedbacks.sqlite'),
         TEMPLATES_AUTO_RELOAD = True
     )
+
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template('404.html')
+
     if test_config == None:
         app.config.from_pyfile('config.py', silent=True)
     else:

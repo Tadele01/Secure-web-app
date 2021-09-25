@@ -10,9 +10,9 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email']
-        password = request.form['password']
+        username = request.form.get('username', None)
+        email = request.form.get('email', None)
+        password = request.form.get('password', None)
         db = get_db()
         error = None
 
@@ -57,7 +57,7 @@ def login():
                 session.clear()
                 session['user_id'] = user['id']
                 return redirect(url_for('feedback.logged_as_user'))
-        if user['is_active'] == 0:
+        elif user['is_active'] == 0:
             error = 'User is banned contact the adminstrator !'
         if error is None:
             session.clear()
