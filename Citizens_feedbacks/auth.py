@@ -4,53 +4,47 @@ from flask import (Blueprint, redirect, render_template, flash, g,
 from werkzeug import useragents
 from werkzeug.exceptions import RequestEntityTooLarge
 from werkzeug.security import check_password_hash, generate_password_hash
+from wtforms import form
 from Citizens_feedbacks.db import get_db
+from Citizens_feedbacks.form_validator import RegistrationForm, LoginForm
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'POST':
-        username = request.form.get('username', None)
-        email = request.form.get('email', None)
-        password = request.form.get('password', None)
+    registeration_form = RegistrationForm()
+    if registeration_form.validate_on_submit():
         db = get_db()
         error = None
-
-        if not username:
-            error = 'Username is required !'
-        elif not password:
-            error = 'Password is required !'
-        elif not email:
-            error = 'Email is required !'
-        if error is None:
-            try:
-                db.execute(
-                    "INSERT INTO user (username, email, password) VALUES (?, ?, ?)", 
-                        (username, email, generate_password_hash(password))
-                )
-                db.commit()
-            except db.IntegrityError:
-                error = f"User {username} is already existed"
-            else:
-                return redirect(url_for('auth.login'))
+        print(registeration_form.username, registeration_form.password)
+        try:
+            db.execute(
+                "INSERT INTO user (username, email, password) VALUES (?, ?, ?)", 
+                    (registeration_form.username.data, registeration_form.email.data, 
+                    generate_password_hash(registeration_form.password.data))
+            )
+            db.commit()
+        except db.IntegrityError:
+            error = f"User {registeration_form.username.data} is already existed"
+        else:
+            return redirect(url_for('auth.login'))
         flash(error)
-    
-    return render_template('auth/register.html')
+    else:
+        for error, msg in registeration_form.errors.items():
+            flash(''.join(msg))
+    return render_template('auth/register.html', form=registeration_form)
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        username = request.form.get('username', None)
-        password = request.form.get('password', None)
-        is_admin = request.form.get('admin', None)
+    login_form = LoginForm()
+    if login_form.validate_on_submit():
         db = get_db()
         error = None
-        user = db.execute('SELECT * FROM user WHERE username = ?', (username, )).fetchone()
+        user = db.execute('SELECT * FROM user WHERE username = ?', (login_form.username.data, )).fetchone()
         if user is None:
             error = "User does not exists"
-        elif not check_password_hash(user['password'], password):
+        elif not check_password_hash(user['password'], login_form.password.data):
             error = "Username or Password incorrect"
-        elif is_admin or user['role'] == 'admin':
+        elif login_form.is_admin.data or user['role'] == 'admin':
             if user['role'] != 'admin':
                 error = "Username or Password incorrect"
             else:
@@ -65,8 +59,10 @@ def login():
             return redirect(url_for('feedback.logged_as_user'))
         
         flash(error)
-
-    return render_template('auth/login.html')
+    else:
+        for error, msg in login_form.errors.items():
+            flash(''.join(msg))
+    return render_template('auth/login.html', form=login_form)
 
 
 @bp.before_app_request

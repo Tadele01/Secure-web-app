@@ -5,12 +5,11 @@
 {% endblock %}
 
 {% block content %}
-  <form method="post">
-    <label for="username">Username</label>
-    <input name="username" id="username" required>
-    <label for="password">Password</label>
-    <input type="password" name="password" id="password" required>
-    <input type="submit" value="Log In">
-    <span>Login As Admin <input type="checkbox" id="login_admin" name="admin" value="admin"></span>
+  <form method="post">  
+    {{ form.csrf_token() }}
+    <div>{{ form.username.label }}: {{ form.username() }}</div>
+    <div>{{ form.password.label }}: {{ form.password() }}</div>
+    <div>{{ form.is_admin.label }}: {{ form.is_admin() }}</div>
+    <div>{{ form.submit() }}</div>
   </form>
 {% endblock %}
