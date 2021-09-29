@@ -15,17 +15,24 @@ def register():
     if registeration_form.validate_on_submit():
         db = get_db()
         error = None
-        try:
-            db.execute(
-                "INSERT INTO user (username, email, password) VALUES (?, ?, ?)", 
-                    (registeration_form.username.data, registeration_form.email.data, 
-                    generate_password_hash(registeration_form.password.data))
-            )
-            db.commit()
-        except db.IntegrityError:
-            error = f"User {registeration_form.username.data} is already existed"
-        else:
-            return redirect(url_for('auth.login'))
+        username = ''.join(e for e in registeration_form.username.data if e.isalnum()) 
+        email = ''.join(e for e in registeration_form.email.data if e.isalnum()) 
+        password = ''.join(e for e in registeration_form.password.data if e.isalnum()) 
+        if username != registeration_form.username.data or email != registeration_form.email.data or \
+            password != registeration_form.password.data:
+            error = "Some Fields Contain Special Characters !"
+        if not error:
+            try:
+                db.execute(
+                    "INSERT INTO user (username, email, password) VALUES (?, ?, ?)", 
+                        (username, email, 
+                        generate_password_hash(password))
+                )
+                db.commit()
+            except db.IntegrityError:
+                error = f"User {registeration_form.username.data} is already existed"
+            else:
+                return redirect(url_for('auth.login'))
         flash(error)
     else:
         for error, msg in registeration_form.errors.items():
