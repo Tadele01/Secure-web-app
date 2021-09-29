@@ -1,13 +1,20 @@
 from flask import (Blueprint, redirect, render_template, flash, url_for, g, request)
 from werkzeug.exceptions import abort
 from Citizens_feedbacks.auth import login, login_required
+from werkzeug.utils import secure_filename
 from Citizens_feedbacks.db import get_db
-
-
+import os 
+ALLOWED_EXTENSIONS = {'pdf'}
+UPLOAD_FOLDER = '/home/tade/Downloads/files'
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 bp = Blueprint('feedback', __name__)
 
 @bp.route('/')
 def index():
+    if g.user:
+        return redirect(url_for('feedback.logged_as_user'))
     return render_template('feedback/index.html')
 
 @bp.route('/user')
@@ -40,17 +47,26 @@ def logged_as_user():
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required
 def create():
+    if g.user:
+        if g.user['role'] == 'admin':
+            return render_template('404.html')
     if request.method == 'POST':
-        title = request.form['title']
-        body = request.form['body']
+        title = request.form.get('title', None)
+        body = request.form.get('body', None)
         error = None
-
+        if 'file' in request.files:
+            file = request.files['file']
+            if file and file.filename != '' and allowed_file(file.filename):
+                filename = str(g.user['id']) + '_' + title + '.pdf'
+                file.save(os.path.join(UPLOAD_FOLDER, filename))
+            elif file:
+                error = 'File not Supported'
         if not title:
             error = 'Title is required.'
 
         if error is not None:
             flash(error)
-        else:
+        else: 
             db = get_db()
             db.execute(
                 'INSERT INTO petitions (title, body, author_id)'

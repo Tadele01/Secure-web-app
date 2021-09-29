@@ -15,7 +15,6 @@ def register():
     if registeration_form.validate_on_submit():
         db = get_db()
         error = None
-        print(registeration_form.username, registeration_form.password)
         try:
             db.execute(
                 "INSERT INTO user (username, email, password) VALUES (?, ?, ?)", 
@@ -44,10 +43,7 @@ def login():
             error = "User does not exists"
         elif not check_password_hash(user['password'], login_form.password.data):
             error = "Username or Password incorrect"
-        elif login_form.is_admin.data or user['role'] == 'admin':
-            if user['role'] != 'admin':
-                error = "Username or Password incorrect"
-            else:
+        elif user['role'] == 'admin':
                 session.clear()
                 session['user_id'] = user['id']
                 return redirect(url_for('feedback.logged_as_user'))

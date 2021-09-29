@@ -9,7 +9,6 @@
     {{ form.csrf_token() }}
     <div>{{ form.username.label }}: {{ form.username() }}</div>
     <div>{{ form.password.label }}: {{ form.password() }}</div>
-    <div>{{ form.is_admin.label }}: {{ form.is_admin() }}</div>
     <div>{{ form.submit() }}</div>
   </form>
 {% endblock %}

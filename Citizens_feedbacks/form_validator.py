@@ -22,6 +22,6 @@ class LoginForm(FlaskForm):
         validators.Length(min=6, max=12, message='Username or Password incorrect'),
         validators.DataRequired( message='Username or Password incorrect'),
         ])
-    is_admin = BooleanField('Login as admin')
-
     submit = SubmitField('Login')
+
+
