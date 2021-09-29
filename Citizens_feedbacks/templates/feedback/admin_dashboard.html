@@ -5,6 +5,7 @@
       <header>
         <div>
           <h1>{{ feedback['title'] }}</h1>
+          <p>{{ feedback['body'] }}</p>
           <div class="about">by {{ feedback['username'] }} on {{ feedback['created'].strftime('%Y-%m-%d') }}</div>
         </div>
         {% if g.user['role'] == 'admin' %}

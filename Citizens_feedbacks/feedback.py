@@ -64,7 +64,7 @@ def create():
         if not title:
             error = 'Title is required.'
 
-        if error is not None:
+        if error:
             flash(error)
         else: 
             db = get_db()
@@ -103,11 +103,13 @@ def update(id):
         title = request.form['title']
         body = request.form['body']
         error = None
-
+        title = request.form.get('title', None)
+        body = request.form.get('body', None)
+        error = None
         if not title:
             error = 'Title is required.'
 
-        if error is not None:
+        if error:
             flash(error)
         else:
             db = get_db()
